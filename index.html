@@ -814,17 +814,26 @@ fp.addEventListener('scroll',upd,{passive:true});
 window.addEventListener('scroll',upd,{passive:true});
 const ob=new IntersectionObserver(es=>{es.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('on'),i*50);});},{threshold:.06});
 document.querySelectorAll('.rv').forEach(el=>ob.observe(el));
-document.getElementById('fp').addEventListener('input',function(){
+/* 전화번호 자동 포맷 (입력 중) */
+document.querySelector('input[type="tel"]').addEventListener('input',function(){
   let v=this.value.replace(/\D/g,'').slice(0,11);
   if(v.length>7)v=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);
   else if(v.length>3)v=v.slice(0,3)+'-'+v.slice(3);
   this.value=v;
 });
+/* 전화번호 포맷 헬퍼 — 제출 시 숫자만 붙여넣어도 010-XXXX-XXXX 형태로 변환 */
+function formatPhone(v){
+  let n=v.replace(/\D/g,'').slice(0,11);
+  if(n.length>7)return n.slice(0,3)+'-'+n.slice(3,7)+'-'+n.slice(7);
+  if(n.length>3)return n.slice(0,3)+'-'+n.slice(3);
+  return n;
+}
 document.getElementById('cf').addEventListener('submit',async function(e){
   e.preventDefault();
   const b=document.getElementById('sbtn');
   b.disabled=true;b.textContent='접수 중...';
-  const d={type:'CJ GA 입사문의',name:document.getElementById('fn').value,phone:document.getElementById('fp').value,career:document.querySelector('[name="career"]').value,memo:document.querySelector('[name="memo"]').value,date:new Date().toLocaleString('ko-KR'),extra_email:'jw20371035@gmail.com'};
+  const rawPhone=document.getElementById('fp').value;
+  const d={type:'CJ GA 입사문의',name:document.getElementById('fn').value,phone:formatPhone(rawPhone),career:document.querySelector('[name="career"]').value,memo:document.querySelector('[name="memo"]').value,date:new Date().toLocaleString('ko-KR'),extra_email:'jw20371035@gmail.com'};
   try{await fetch('https://script.google.com/macros/s/AKfycbyTNexrJjDSMhVQCRCAU3uVtXtMuASQgfXXMw_CyicLG7pvI9XhDUCnN2-cTp2MjsMS/exec',{method:'POST',mode:'no-cors',body:JSON.stringify(d),headers:{'Content-Type':'text/plain'}});}catch(e){}
   document.getElementById('modal').classList.add('show');
   this.reset();b.disabled=false;b.textContent='상담 신청하기 — 박주완 본부장에게 바로 접수';
